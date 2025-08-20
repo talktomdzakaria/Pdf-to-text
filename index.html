@@ -1,1 +1,70 @@
-<html><body>Replace with index.html</body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF to Image Converter — Free Online Tool</title>
+  <meta name="description" content="Convert PDF files to high-quality JPG or PNG images instantly. 100% free, secure, and works directly in your browser." />
+  <meta name="keywords" content="pdf to image, convert pdf to jpg, pdf to png, free pdf converter, online pdf tool" />
+  <meta property="og:title" content="PDF to Image Converter — Free Online Tool" />
+  <meta property="og:description" content="Convert PDF files to high-quality JPG or PNG images instantly. 100% free, secure, and works directly in your browser." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+</head>
+<body class="bg-gray-100 text-gray-900 font-sans">
+  <header class="bg-blue-600 text-white p-6 shadow-md">
+    <h1 class="text-3xl font-bold text-center">Free PDF to Image Converter</h1>
+    <p class="text-center text-lg mt-2">Convert your PDFs into high-quality JPG/PNG images instantly.</p>
+  </header>
+  <main class="max-w-4xl mx-auto p-6">
+    <div class="bg-white rounded-2xl shadow-lg p-6">
+      <input type="file" id="pdfUpload" accept="application/pdf" class="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer mb-4" />
+      <button onclick="convertPDF()" class="px-6 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition">Convert to Images</button>
+    </div>
+    <div id="output" class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6"></div>
+  </main>
+  <footer class="text-center p-6 text-sm text-gray-500">
+    © 2025 PDF to Image Converter. All rights reserved.
+  </footer>
+
+  <script>
+    async function convertPDF() {
+      const fileInput = document.getElementById('pdfUpload');
+      if (!fileInput.files.length) return alert('Please upload a PDF first.');
+      const file = fileInput.files[0];
+      const fileReader = new FileReader();
+      fileReader.onload = async function() {
+        const typedarray = new Uint8Array(this.result);
+        const pdf = await pdfjsLib.getDocument(typedarray).promise;
+        const output = document.getElementById('output');
+        output.innerHTML = '';
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+          const page = await pdf.getPage(pageNum);
+          const viewport = page.getViewport({ scale: 2 });
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          await page.render({ canvasContext: context, viewport }).promise;
+          const img = document.createElement('img');
+          img.src = canvas.toDataURL('image/png');
+          img.className = "rounded-xl shadow-md";
+          const link = document.createElement('a');
+          link.href = img.src;
+          link.download = `page-${pageNum}.png`;
+          link.innerText = "Download Page " + pageNum;
+          link.className = "block mt-2 text-center text-blue-600 underline";
+          const container = document.createElement('div');
+          container.appendChild(img);
+          container.appendChild(link);
+          output.appendChild(container);
+        }
+      };
+      fileReader.readAsArrayBuffer(file);
+    }
+  </script>
+</body>
+</html>
